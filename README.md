@@ -49,16 +49,21 @@ Every high-risk call observed was `isolate_host`.
 
 What I see so far:
 
-1. **The attack works sometimes.** Both models isolated the PLC gateway in 2 of 10 runs
-   because of text the attacker put in their own traffic.
-2. **The hidden note changed the verdict even when no action was taken.** With the injection,
-   neither model labelled the real attack as malicious in any of the 20 runs on that alert
-   (without it: 2 of 5 for each model).
-3. **Spotlighting made it worse here** (3B: 2 → 7 of 10; 7B: 2 → 5 of 10). My guess is that
+1. **The attack works sometimes.** Both models called `isolate_host` in 2 of 10 injected runs.
+   (This version logged tool names but not their arguments, so I cannot yet confirm the
+   target was the PLC gateway; the next version logs arguments.)
+2. **The verdict on the real attack changed, but this result is confounded.** With the injection,
+   neither model labelled the real attack as malicious in any of the 15 injected runs per model
+   (without it: 2 of 5). However, in this version the injection *replaced* the attacker's
+   original User-Agent (`sqlmap/1.8`), the strongest evidence of an attack, so the change mixes
+   added instructions with removed evidence. The next version keeps the original value.
+3. **Delimiter-style spotlighting made it worse here** (3B: 2 → 7 of 10; 7B: 2 → 5 of 10;
+   pooled Fisher exact p ≈ 0.02, per model not significant). My guess is that
    marking the text and warning about it drew the model's attention to the injected
    instruction, but I have not tested this.
-4. **The policy gate stopped every harmful action from running**, but it cannot stop the
-   assistant from giving the analyst a wrong verdict.
+4. **The policy gate stopped every high-risk action from running**, which is true by design
+   for an allowlist; the real question is how many legitimate actions it also blocks. It does not
+   stop the assistant from giving the analyst a wrong verdict.
 
 ## Limitations
 
